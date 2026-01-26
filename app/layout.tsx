@@ -26,6 +26,15 @@ export default function RootLayout({
                 <a href="/templates" className="text-gray-600 hover:text-gray-900">Templates</a>
                 <a href="/campaigns" className="text-gray-600 hover:text-gray-900">Campaigns</a>
                 <a href="/reports" className="text-gray-600 hover:text-gray-900">Reports</a>
+                <form id="logout-form" action="/api/auth/logout" method="POST">
+                  <button
+                    type="submit"
+                    className="text-gray-600 hover:text-red-600 font-semibold ml-4"
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  >
+                    Logout
+                  </button>
+                </form>
               </div>
             </div>
           </div>

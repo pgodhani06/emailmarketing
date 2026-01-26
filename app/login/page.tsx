@@ -3,19 +3,15 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function RegisterPage() {
+export default function LoginPage() {
   const router = useRouter();
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
-  const [errors, setErrors] = useState({ name: '', email: '', password: '', submit: '' });
+  const [form, setForm] = useState({ email: '', password: '' });
+  const [errors, setErrors] = useState({ email: '', password: '', submit: '' });
   const [loading, setLoading] = useState(false);
 
   function validate() {
     let valid = true;
-    const newErrors = { name: '', email: '', password: '', submit: '' };
-    if (!form.name.trim()) {
-      newErrors.name = 'Name is required.';
-      valid = false;
-    }
+    const newErrors = { email: '', password: '', submit: '' };
     if (!form.email.trim()) {
       newErrors.email = 'Email is required.';
       valid = false;
@@ -26,32 +22,30 @@ export default function RegisterPage() {
     if (!form.password) {
       newErrors.password = 'Password is required.';
       valid = false;
-    } else if (form.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters.';
-      valid = false;
     }
     setErrors(newErrors);
     return valid;
   }
 
-
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setErrors({ name: '', email: '', password: '', submit: '' });
+    setErrors({ email: '', password: '', submit: '' });
     if (!validate()) return;
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/register', {
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
       const data = await res.json();
       if (!res.ok) {
-        setErrors(errs => ({ ...errs, submit: data.message || 'Registration failed.' }));
+        setErrors(errs => ({ ...errs, submit: data.message || 'Login failed.' }));
       } else {
-        // Redirect to login with success message
-        router.push('/login?registered=1');
+        
+      // console.log('Login response data:', res, data);
+        // Redirect to dashboard or home
+        router.push('/');
       }
     } catch (err) {
       setErrors(errs => ({ ...errs, submit: 'Network error. Please try again.' }));
@@ -65,25 +59,10 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-purple-200">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-        <h1 className="text-3xl font-bold mb-6 text-center text-purple-700">Create your account</h1>
+        <h1 className="text-3xl font-bold mb-6 text-center text-indigo-700">Sign in to your account</h1>
         <form className="space-y-5" onSubmit={handleSubmit} noValidate>
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              autoComplete="name"
-              required
-              className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:ring-purple-500 focus:border-purple-500 ${errors.name ? 'border-red-400' : 'border-gray-300'}`}
-              placeholder="Your Name"
-              value={form.name}
-              onChange={handleChange}
-            />
-            {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
-          </div>
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
             <input
@@ -92,7 +71,7 @@ export default function RegisterPage() {
               name="email"
               autoComplete="email"
               required
-              className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:ring-purple-500 focus:border-purple-500 ${errors.email ? 'border-red-400' : 'border-gray-300'}`}
+              className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 ${errors.email ? 'border-red-400' : 'border-gray-300'}`}
               placeholder="you@example.com"
               value={form.email}
               onChange={handleChange}
@@ -105,9 +84,9 @@ export default function RegisterPage() {
               type="password"
               id="password"
               name="password"
-              autoComplete="new-password"
+              autoComplete="current-password"
               required
-              className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:ring-purple-500 focus:border-purple-500 ${errors.password ? 'border-red-400' : 'border-gray-300'}`}
+              className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 ${errors.password ? 'border-red-400' : 'border-gray-300'}`}
               placeholder="••••••••"
               value={form.password}
               onChange={handleChange}
@@ -116,17 +95,16 @@ export default function RegisterPage() {
           </div>
           <button
             type="submit"
-            className="w-full py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-md shadow focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-60"
+            className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md shadow focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60"
             disabled={loading}
           >
-            {loading ? 'Registering...' : 'Register'}
+            {loading ? 'Signing in...' : 'Sign In'}
           </button>
           {errors.submit && <p className="text-sm text-red-500 text-center mt-2">{errors.submit}</p>}
-          {/* {success && <p className="text-sm text-green-600 text-center mt-2">Registration successful! You can now <Link href="/login" className="underline">sign in</Link>.</p>} */}
         </form>
         <p className="mt-6 text-center text-sm text-gray-600">
-          Already have an account?{' '}
-          <Link href="/login" className="text-purple-600 hover:underline font-medium">Sign in</Link>
+          Don't have an account?{' '}
+          <Link href="/register" className="text-indigo-600 hover:underline font-medium">Register</Link>
         </p>
       </div>
     </div>
