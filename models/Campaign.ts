@@ -37,6 +37,19 @@ const campaignSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    perDayLimit: {
+      type: Number,
+      default: 1,
+    },
+    lastSentAt: {
+      type: Date,
+      default: null,
+    },
+    cronAt: {
+      type: Date,
+      default: Date.now,
+    },
+    lastSendemailId: mongoose.Schema.Types.ObjectId,
     trackingPixelId: String,
     createdAt: {
       type: Date,

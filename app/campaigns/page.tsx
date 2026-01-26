@@ -40,6 +40,7 @@ export default function CampaignsPage() {
     emailListId: '',
     templateId: '',
     scheduledFor: '',
+    perDayLimit: 1,
   });
 
   useEffect(() => {
@@ -129,6 +130,7 @@ export default function CampaignsPage() {
     setSuccess('');
 
     try {
+      console.log('Submitting campaign with data:', formData);
       const res = await fetch('/api/campaigns', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -139,7 +141,7 @@ export default function CampaignsPage() {
         throw new Error(errorData.error || 'Failed to create campaign');
       }
       
-      setFormData({ name: '', emailListId: '', templateId: '', scheduledFor: '' });
+      setFormData({ name: '', emailListId: '', templateId: '', scheduledFor: '', perDayLimit: 1 });
       setShowForm(false);
       setSuccess('Campaign created successfully!');
       setTimeout(() => setSuccess(''), 3000);
@@ -304,6 +306,19 @@ export default function CampaignsPage() {
             </select>
           </div>
 
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Per Day Limit
+            </label>
+            <input
+              type="number"
+              min={1}
+              value={formData.perDayLimit}
+              onChange={e => setFormData({ ...formData, perDayLimit: Number(e.target.value) })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Schedule For (Optional)
@@ -328,7 +343,7 @@ export default function CampaignsPage() {
               type="button" 
               onClick={() => {
                 setShowForm(false);
-                setFormData({ name: '', emailListId: '', templateId: '', scheduledFor: '' });
+                setFormData({ name: '', emailListId: '', templateId: '', scheduledFor: '', perDayLimit: 1 });
                 setError('');
               }}
               className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition"

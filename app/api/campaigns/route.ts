@@ -61,6 +61,8 @@ export async function POST(request: NextRequest) {
       scheduledFor: body.scheduledFor,
       trackingPixelId,
       totalRecipients: body.totalRecipients,
+      perDayLimit: body.perDayLimit ?? 1,
+      cronAt: body.scheduledFor
     });
 
     await campaign.save();

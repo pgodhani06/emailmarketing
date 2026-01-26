@@ -16,6 +16,10 @@ const subscriberSchema = new mongoose.Schema(
       enum: ['Right', 'Wrong'],
       default: 'Right',
     },
+    sended: {
+      type: Boolean,
+      default: false,
+    },
     variables: mongoose.Schema.Types.Mixed,
   },
   { timestamps: true }
