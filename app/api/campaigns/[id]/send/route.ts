@@ -38,12 +38,11 @@ export async function POST(
       );
     }
 
-    const trackingDomain = process.env.NEXT_PUBLIC_TRACKING_DOMAIN;
+    let trackingDomain = process.env.NEXT_PUBLIC_TRACKING_DOMAIN;
     if (!trackingDomain) {
-      return NextResponse.json(
-        { error: 'Tracking domain not configured' },
-        { status: 500 }
-      );
+      // Fallback: get domain from request
+      const url = new URL(_request.url);
+      trackingDomain = url.origin;
     }
 
     let transporter;

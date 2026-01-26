@@ -37,7 +37,19 @@ export function initializeCronJobs() {
 
 async function sendCampaign(campaign: any) {
   const transporter = await getGmailTransport();
-  const trackingDomain = process.env.NEXT_PUBLIC_TRACKING_DOMAIN;
+  let trackingDomain = process.env.NEXT_PUBLIC_TRACKING_DOMAIN;
+  if (!trackingDomain) {
+    // Fallback: try to get domain from environment
+    trackingDomain = process.env.NEXT_PUBLIC_API_URL;
+  }
+  if (!trackingDomain && campaign.url) {
+    try {
+      const urlObj = new URL(campaign.url);
+      trackingDomain = urlObj.origin;
+    } catch (e) {
+      console.error('Invalid campaign URL:', campaign.url);
+    }
+  }
   let sentCount = 0;
   let failedCount = 0;
 
