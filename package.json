@@ -4,6 +4,7 @@
   "description": "Full-stack email marketing platform with Next.js, Node.js, and MongoDB",
   "private": true,
   "scripts": {
+    "cron": "node app/cron.js",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
