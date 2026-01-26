@@ -24,7 +24,7 @@ export async function POST(
     }
 
     // Get existing emails for duplicate checking
-    const existingEmails = new Set(list.emails.map((sub) => sub.email.toLowerCase()));
+    const existingEmails = new Set(list.emails.map((sub:any) => sub.email.toLowerCase()));
 
     // Add new subscribers (skip duplicates)
     let addedCount = 0;

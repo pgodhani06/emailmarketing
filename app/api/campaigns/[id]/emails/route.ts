@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import {  NextRequest,NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Report from '@/models/Report';
 
@@ -8,7 +8,7 @@ export async function GET(
 ) {
   try {
     await dbConnect();
-
+    console.log('Fetching reports for campaign ID:', request.method);
     const reports = await Report.find({ campaignId: params.id })
       .select('recipientEmail status sentAt openedAt createdAt')
       .sort({ sentAt: -1, createdAt: -1 })

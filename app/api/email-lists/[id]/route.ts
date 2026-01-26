@@ -4,6 +4,7 @@ import EmailList from '@/models/EmailList';
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    console.log('Fetching email list with ID:', request.method);
     await dbConnect();
     const list = await EmailList.findById(params.id);
     if (!list) {
@@ -32,6 +33,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    console.log('Deleting email list with ID:', request.method);
     await dbConnect();
     const list = await EmailList.findByIdAndDelete(params.id);
     if (!list) {

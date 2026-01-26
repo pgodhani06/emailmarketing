@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('Fetching all campaigns',request.method);
     await dbConnect();
     const campaigns = await Campaign.find()
       .populate('emailListId', 'name')

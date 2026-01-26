@@ -4,6 +4,7 @@ import Report from '@/models/Report';
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    console.log('Fetching campaign reports for ID:', request.method);
     await dbConnect();
     const reports = await Report.find({ campaignId: params.id });
     

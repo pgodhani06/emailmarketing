@@ -21,7 +21,7 @@ export async function POST(
       return NextResponse.json({ error: 'Email list not found' }, { status: 404 });
     }
 
-    const emailExists = list.emails.some((sub) => sub.email === email);
+    const emailExists = list.emails.some((sub: any) => sub.email === email);
     if (emailExists) {
       return NextResponse.json({ error: 'Email already exists in this list' }, { status: 400 });
     }
@@ -53,7 +53,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    await connectToDatabase();
+    await dbConnect();
     const body = await request.json();
     const { email, emails } = body;
 
@@ -79,7 +79,7 @@ export async function DELETE(
       );
       const deletedCount = list.emails.length;
       list.emails = list.emails.filter(
-        (sub) => !emailsSet.has(sub.email.toLowerCase())
+        (sub: any) => !emailsSet.has(sub.email.toLowerCase())
       );
       const actualDeleted = deletedCount - list.emails.length;
       list.totalCount = list.emails.length;
@@ -108,7 +108,7 @@ export async function DELETE(
     }
 
     // Remove subscriber
-    list.emails = list.emails.filter((sub) => sub.email !== email);
+    list.emails = list.emails.filter((sub: any) => sub.email !== email);
     list.totalCount = list.emails.length;
     await list.save();
 

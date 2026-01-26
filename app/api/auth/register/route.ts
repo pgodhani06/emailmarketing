@@ -22,6 +22,7 @@ export async function POST(req: Request) {
 		await user.save();
 		return NextResponse.json({ message: 'Registration successful.' }, { status: 201 });
 	} catch (err) {
+		console.error('Registration error:', err);
 		return NextResponse.json({ message: 'Server error.' }, { status: 500 });
 	}
 }

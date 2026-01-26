@@ -3,6 +3,7 @@ import dbConnect from '@/lib/mongodb';
 import EmailTemplate from '@/models/EmailTemplate';
 
 export async function GET(request: NextRequest) {
+  console.log('Fetching all templates',request.method);
   try {
     await dbConnect();
     const templates = await EmailTemplate.find();

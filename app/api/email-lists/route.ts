@@ -4,6 +4,7 @@ import EmailList from '@/models/EmailList';
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('Fetching all email lists',request.method);
     await dbConnect();
     const lists = await EmailList.find().select('-emails');
     return NextResponse.json(lists);

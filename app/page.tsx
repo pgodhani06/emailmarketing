@@ -11,7 +11,7 @@ interface CampaignStat {
 export default function Dashboard() {
   const [stats, setStats] = useState<CampaignStat[]>([]);
   const [loading, setLoading] = useState(true);
-
+  console.log('Dashboard component rendered',loading);
   useEffect(() => {
     const fetchStats = async () => {
       try {

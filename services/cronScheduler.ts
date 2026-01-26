@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import { connectToDatabase } from '@/lib/mongodb';
+import dbConnect from '@/lib/mongodb';
 import Campaign from '@/models/Campaign';
 import { getGmailTransport, replaceVariables } from '@/lib/emailService';
 import EmailList from '@/models/EmailList';
@@ -10,7 +10,7 @@ export function initializeCronJobs() {
   // Check every minute for campaigns that need to be sent
   cron.schedule('* * * * *', async () => {
     try {
-      await connectToDatabase();
+      await dbConnect();
 
       const now = new Date();
       const campaigns = await Campaign.find({

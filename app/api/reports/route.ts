@@ -4,6 +4,7 @@ import Report from '@/models/Report';
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('Fetching all reports',request.method);
     await dbConnect();
     const reports = await Report.find().populate('campaignId', 'name');
     return NextResponse.json(reports);

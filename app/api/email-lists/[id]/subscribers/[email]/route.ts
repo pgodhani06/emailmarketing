@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
+import connectToDatabase from '@/lib/mongodb';
 import EmailList from '@/models/EmailList';
 
 export async function PUT(
@@ -22,14 +22,14 @@ export async function PUT(
     }
 
     // Find the subscriber to update
-    const subscriberIndex = list.emails.findIndex((sub) => sub.email === originalEmail);
+    const subscriberIndex = list.emails.findIndex((sub: any) => sub.email === originalEmail);
     if (subscriberIndex === -1) {
       return NextResponse.json({ error: 'Subscriber not found' }, { status: 404 });
     }
 
     // Check if new email already exists (if email changed)
     if (email !== originalEmail) {
-      const emailExists = list.emails.some((sub) => sub.email === email);
+      const emailExists = list.emails.some((sub: any) => sub.email === email);
       if (emailExists) {
         return NextResponse.json({ error: 'Email already exists in this list' }, { status: 400 });
       }
