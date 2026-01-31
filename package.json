@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "cron": "node app/cron.js",
-    "dev": "next dev",
+    "dev": "concurrently \"next dev\" \"cd cron && npm install && npm run dev\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -14,6 +14,7 @@
   "dependencies": {
     "axios": "^1.6.0",
     "bcryptjs": "^3.0.3",
+    "concurrently": "^9.2.1",
     "date-fns": "^2.30.0",
     "dotenv": "^16.3.0",
     "jose": "^6.1.3",
