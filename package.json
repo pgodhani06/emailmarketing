@@ -8,7 +8,7 @@
     "dev": "concurrently \"next dev\" \"cd cron && npm install && npm run dev\"",
     "dev-next": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "concurrently \"next start\" \"cd cron && npm install && npm start\"",
     "lint": "next lint",
     "db:seed": "node scripts/seed.js"
   },

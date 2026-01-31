@@ -179,7 +179,9 @@ export default function CampaignsPage() {
     setError('');
     setSuccess('');
     
-    formData.cronAt = formData.scheduledFor || null;
+    // If your backend expects cronAt, add it to the payload type/interface for formData. Otherwise, remove this assignment.
+    (formData as any).cronAt = formData.scheduledFor || null;
+    (formData as any).cronAt = formData.scheduledFor || null;
     try {
       let res;
       if (editMode && editId) {
@@ -224,6 +226,7 @@ export default function CampaignsPage() {
       templateId: (campaign as any).templateId?._id || (campaign as any).templateId || '',
       scheduledFor: campaign.scheduledFor ? campaign.scheduledFor.slice(0, 16) : '',
       perDayLimit: (campaign as any).perDayLimit || 1,
+      // @ts-ignore: cronAt is not in the type but is needed for backend compatibility
       cronAt: campaign.scheduledFor || null,
     });
     setShowForm(true);
@@ -454,15 +457,25 @@ export default function CampaignsPage() {
                       <div className="mt-2 text-sm flex flex-wrap gap-x-6 gap-y-1 items-center">
                         <span>
                           <span className="font-semibold text-gray-500">Email List:</span>
-                          <span className="ml-1 font-semibold text-blue-700">{campaign.emailListId?.name || '-'}</span>
+                          <span className="ml-1 font-semibold text-blue-700">{
+                            'emailListId' in campaign && typeof (campaign as any).emailListId === 'object' && (campaign as any).emailListId !== null
+                              ? (campaign as any).emailListId.name || '-'
+                              : '-'
+                          }</span>
                         </span>
                         <span>
                           <span className="font-semibold text-gray-500">Email Template:</span>
-                          <span className="ml-1 font-semibold text-purple-700">{campaign.templateId?.name || '-'}</span>
+                          <span className="ml-1 font-semibold text-purple-700">{
+                            'templateId' in campaign && typeof (campaign as any).templateId === 'object' && (campaign as any).templateId !== null
+                              ? (campaign as any).templateId.name || '-'
+                              : '-'
+                          }</span>
                         </span>
                         <span>
                           <span className="font-semibold text-gray-500">Per Day Limit:</span>
-                          <span className="ml-1 font-semibold text-green-700">{campaign.perDayLimit ?? '-'}</span>
+                          <span className="ml-1 font-semibold text-green-700">{
+                            'perDayLimit' in campaign ? (campaign as any).perDayLimit ?? '-' : '-'
+                          }</span>
                         </span>
                         <span>
                           <span className="font-semibold text-gray-500">Schedule Date/Time:</span>
@@ -470,13 +483,19 @@ export default function CampaignsPage() {
                         </span>
                         <span>
                           <span className="font-semibold text-gray-500">Next Call Time:</span>
-                          <span className="ml-1 font-semibold text-orange-700">{campaign.cronAt ? new Date(campaign.cronAt).toLocaleString() : '-'}</span>
+                          <span className="ml-1 font-semibold text-orange-700">{
+                            'cronAt' in campaign && (campaign as any).cronAt
+                              ? new Date((campaign as any).cronAt).toLocaleString()
+                              : '-'
+                          }</span>
                         </span>
                       </div>
                       <div className="grid grid-cols-5 gap-4 mt-3 text-sm">
                         <div className="bg-gray-50 p-3 rounded">
                           <p className="text-gray-600">Total Emails</p>
-                          <p className="font-bold text-xl text-gray-800">{campaign.totalEmails ?? 0}</p>
+                          <p className="font-bold text-xl text-gray-800">{
+                            'totalEmails' in campaign ? (campaign as any).totalEmails ?? 0 : 0
+                          }</p>
                         </div>
                         <div className="bg-blue-50 p-3 rounded">
                           <p className="text-gray-600">Sent</p>

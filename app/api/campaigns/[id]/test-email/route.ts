@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Campaign from '@/models/Campaign';
-import EmailList from '@/models/EmailList';
-import EmailTemplate from '@/models/EmailTemplate';
+// import EmailList from '@/models/EmailList';
+// import EmailTemplate from '@/models/EmailTemplate';
 import { sendEmail } from '@/lib/emailService';
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
@@ -22,15 +22,15 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
     // Prepare variables for template rendering (use dummy data or campaign defaults)
     const variables = { firstName: 'Test', ...campaign.variables };
-    const html = template.htmlContent.replace(/{{\s*(\w+)\s*}}/g, (_, v) => variables[v] || '');
+    const html = template.htmlContent.replace(/{{\s*(\w+)\s*}}/g, (_: string, v: string) => variables[v] || '');
     await sendEmail({
       to: email,
       subject: campaign.name + ' (Test Email)',
       html,
     });
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Test email error:', error);
-    return NextResponse.json({ error: 'Failed to send test email', details: error?.message || error }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to send test email', details: error?.message || String(error) }, { status: 500 });
   }
 }

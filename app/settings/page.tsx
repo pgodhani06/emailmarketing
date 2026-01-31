@@ -61,38 +61,44 @@ export default function SmtpSettingsPage() {
   return (
     <div className="max-w-xl mx-auto p-8">
       <h2 className="text-2xl font-bold mb-6">SMTP Settings</h2>
-      {error && <div className="mb-4 p-2 bg-red-100 text-red-700 rounded">{error}</div>}
-      {success && <div className="mb-4 p-2 bg-green-100 text-green-700 rounded">{success}</div>}
-      <form onSubmit={handleSave} className="space-y-6 bg-white p-6 rounded shadow">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Sender Email</label>
-          <input
-            type="email"
-            value={senderEmail}
-            onChange={e => setSenderEmail(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">App Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-            autoComplete="new-password"
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={saving}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400"
-        >
-          {saving ? "Saving..." : "Save Settings"}
-        </button>
-      </form>
+      {loading ? (
+        <div className="mb-4 p-2 bg-gray-100 text-gray-700 rounded">Loading settings...</div>
+      ) : (
+        <>
+          {error && <div className="mb-4 p-2 bg-red-100 text-red-700 rounded">{error}</div>}
+          {success && <div className="mb-4 p-2 bg-green-100 text-green-700 rounded">{success}</div>}
+          <form onSubmit={handleSave} className="space-y-6 bg-white p-6 rounded shadow">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Sender Email</label>
+              <input
+                type="email"
+                value={senderEmail}
+                onChange={e => setSenderEmail(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">App Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+                autoComplete="new-password"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400"
+            >
+              {saving ? "Saving..." : "Save Settings"}
+            </button>
+          </form>
+        </>
+      )}
     </div>
   );
 }
