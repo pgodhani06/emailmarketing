@@ -28,11 +28,13 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith('/login') || pathname.startsWith('/register');
 
   // Protect main app sections
+  // Protect main app sections, including /settings
   const isProtectedRoute =
     pathname === '/' ||
     pathname.startsWith('/campaigns') ||
     pathname.startsWith('/email-lists') ||
     pathname.startsWith('/reports') ||
+    pathname.startsWith('/settings') ||
     pathname.startsWith('/templates');
   // console.log('Middleware check:', { pathname, token, isPublicRoute, isProtectedRoute });
   if (!isTokenValid && isProtectedRoute) {
@@ -53,6 +55,9 @@ export const config = {
     '/email-lists/:path*',
     '/reports/:path*',
     '/templates/:path*',
-    '/'
+    '/settings',
+    '/settings/:path*',
+    '/',
   ],
 }
+ 

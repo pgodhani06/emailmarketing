@@ -178,6 +178,8 @@ export default function CampaignsPage() {
     setSubmitting(true);
     setError('');
     setSuccess('');
+    
+    formData.cronAt = formData.scheduledFor || null;
     try {
       let res;
       if (editMode && editId) {
@@ -222,6 +224,7 @@ export default function CampaignsPage() {
       templateId: (campaign as any).templateId?._id || (campaign as any).templateId || '',
       scheduledFor: campaign.scheduledFor ? campaign.scheduledFor.slice(0, 16) : '',
       perDayLimit: (campaign as any).perDayLimit || 1,
+      cronAt: campaign.scheduledFor || null,
     });
     setShowForm(true);
     setError('');
@@ -464,6 +467,10 @@ export default function CampaignsPage() {
                         <span>
                           <span className="font-semibold text-gray-500">Schedule Date/Time:</span>
                           <span className="ml-1 font-semibold text-pink-700">{campaign.scheduledFor ? new Date(campaign.scheduledFor).toLocaleString() : '-'}</span>
+                        </span>
+                        <span>
+                          <span className="font-semibold text-gray-500">Next Call Time:</span>
+                          <span className="ml-1 font-semibold text-orange-700">{campaign.cronAt ? new Date(campaign.cronAt).toLocaleString() : '-'}</span>
                         </span>
                       </div>
                       <div className="grid grid-cols-5 gap-4 mt-3 text-sm">

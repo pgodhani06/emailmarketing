@@ -8,22 +8,15 @@ import '../model/emailTemplate.model.js';
 
 const sampleJob = async () => {
   try {
-    // Get today's date in YYYY-MM-DD format
-    // Fetch campaigns from local API, filtered by today's date
-    // Get today's date range
-    const today = new Date();
-    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const end = new Date(start);
-    end.setDate(end.getDate() + 1);
-    console.log(`Fetching campaigns scheduled for today: ${start.toISOString().split('T')[0]}`);
-    console.log('Start:', start);
-    console.log('End:', end);
     // Aggregation: get campaigns and perDayLimit emails to send
     const campaigns = await campaignModel.aggregate([
       {
         $match: {
           status: { $ne: "completed" },
-          // scheduledFor: { $gte: start, $lt: end }
+          $or: [
+            { cronAt: null },
+            { cronAt: { $lte: new Date(Date.now()) } }
+          ],
         }
       },
       {
@@ -77,6 +70,7 @@ const sampleJob = async () => {
           console.log(`Campaign ${campaign._id} marked as completed (no emails to send).`);
           continue;
         }
+        let anySent = false;
         for (const emailObj of campaign.emailsToSend) {
           const payload = {
             campaignId: campaign._id.toString(),
@@ -94,6 +88,7 @@ const sampleJob = async () => {
                 { _id: new Types.ObjectId(campaign._id) },
                 { $addToSet: { sendedImailIds: new Types.ObjectId(emailObj._id) } }
               );
+              anySent = true;
               console.log('Email sent and sendedImailIds updated for:', payload);
             } else {
               console.error('Email send failed for:', payload, 'Response:', response.data);
@@ -101,6 +96,18 @@ const sampleJob = async () => {
           } catch (error) {
             console.error('Error sending email for payload:', payload, 'Error:', error.message);
           }
+        }
+        // After processing, update cronAt to next run (e.g., +1 day or now+5min)
+        if (anySent) {
+          // Set cronAt to the next day, but keep the time from scheduledFor
+          let nextDay = new Date();
+          let scheduled = campaign.scheduledFor ? new Date(campaign.scheduledFor) : new Date();
+          nextDay.setDate(nextDay.getDate() + 1);
+          nextDay.setHours(scheduled.getHours(), scheduled.getMinutes(), scheduled.getSeconds(), scheduled.getMilliseconds());
+          await campaignModel.updateOne(
+            { _id: campaign._id },
+            { $set: { cronAt: nextDay } }
+          );
         }
       }
     } else {
