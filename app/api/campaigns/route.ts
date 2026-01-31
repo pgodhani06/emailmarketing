@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     console.log('Fetching all campaigns',request.method);
     await dbConnect();
     const campaigns = await Campaign.find()
-      .populate('emailListId', 'name')
+      .populate({ path: 'emailListId', select: 'name emails totalCount' })
       .populate('templateId', 'name subject');
     
     // Calculate actual sent, opened, and failed counts from reports
@@ -29,11 +29,21 @@ export async function GET(request: NextRequest) {
         });
 
         const campaignObj = campaign.toObject();
+        // Get total emails from emailListId.emails.length or emailListId.totalCount
+        let totalEmails = 0;
+        if (campaignObj.emailListId) {
+          if (Array.isArray(campaignObj.emailListId.emails)) {
+            totalEmails = campaignObj.emailListId.emails.length;
+          } else if (typeof campaignObj.emailListId.totalCount === 'number') {
+            totalEmails = campaignObj.emailListId.totalCount;
+          }
+        }
         return {
           ...campaignObj,
           sentCount: sentCount,
           openedCount: openedCount,
           failedCount: failedCount,
+          totalEmails,
         };
       })
     );

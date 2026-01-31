@@ -6,6 +6,7 @@
   "scripts": {
     "cron": "node app/cron.js",
     "dev": "concurrently \"next dev\" \"cd cron && npm install && npm run dev\"",
+    "dev-next": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

@@ -26,6 +26,7 @@ export default function RootLayout({
                 <a href="/templates" className="text-gray-600 hover:text-gray-900">Templates</a>
                 <a href="/campaigns" className="text-gray-600 hover:text-gray-900">Campaigns</a>
                 <a href="/reports" className="text-gray-600 hover:text-gray-900">Reports</a>
+                <a href="/settings" className="text-gray-600 hover:text-gray-900">Settings</a>
                 <form id="logout-form" action="/api/auth/logout" method="POST">
                   <button
                     type="submit"

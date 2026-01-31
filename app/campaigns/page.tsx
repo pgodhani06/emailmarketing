@@ -42,6 +42,58 @@ export default function CampaignsPage() {
     scheduledFor: '',
     perDayLimit: 1,
   });
+  const [editMode, setEditMode] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [testEmailState, setTestEmailState] = useState<{ [id: string]: { open: boolean; email: string; loading: boolean; result: string } }>({});
+
+  const handleTestEmailClick = (id: string) => {
+    setTestEmailState((prev) => ({
+      ...prev,
+      [id]: { open: !prev[id]?.open, email: '', loading: false, result: '' },
+    }));
+  };
+
+  const handleTestEmailChange = (id: string, value: string) => {
+    setTestEmailState((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], email: value },
+    }));
+  };
+
+  const handleSendTestEmail = async (id: string) => {
+    const email = testEmailState[id]?.email;
+    if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      setTestEmailState((prev) => ({
+        ...prev,
+        [id]: { ...prev[id], result: 'Enter a valid email address.' },
+      }));
+      return;
+    }
+    setTestEmailState((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], loading: true, result: '' },
+    }));
+    try {
+      const res = await fetch(`/api/campaigns/${id}/test-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to send test email');
+      }
+      setTestEmailState((prev) => ({
+        ...prev,
+        [id]: { ...prev[id], loading: false, result: 'Test email sent successfully!' },
+      }));
+    } catch (error) {
+      setTestEmailState((prev) => ({
+        ...prev,
+        [id]: { ...prev[id], loading: false, result: 'Failed to send test email.' },
+      }));
+    }
+  };
 
   useEffect(() => {
     fetchCampaigns();
@@ -111,7 +163,6 @@ export default function CampaignsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!formData.name.trim()) {
       setError('Campaign name is required');
       return;
@@ -124,35 +175,57 @@ export default function CampaignsPage() {
       setError('Template is required');
       return;
     }
-
     setSubmitting(true);
     setError('');
     setSuccess('');
-
     try {
-      console.log('Submitting campaign with data:', formData);
-      const res = await fetch('/api/campaigns', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
+      let res;
+      if (editMode && editId) {
+        res = await fetch(`/api/campaigns/${editId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        });
+      } else {
+        res = await fetch('/api/campaigns', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        });
+      }
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to create campaign');
+        throw new Error(errorData.error || (editMode ? 'Failed to update campaign' : 'Failed to create campaign'));
       }
-      
       setFormData({ name: '', emailListId: '', templateId: '', scheduledFor: '', perDayLimit: 1 });
       setShowForm(false);
-      setSuccess('Campaign created successfully!');
+      setEditMode(false);
+      setEditId(null);
+      setSuccess(editMode ? 'Campaign updated successfully!' : 'Campaign created successfully!');
       setTimeout(() => setSuccess(''), 3000);
       fetchCampaigns();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create campaign';
-      console.error('Failed to create campaign:', error);
+      const errorMessage = error instanceof Error ? error.message : (editMode ? 'Failed to update campaign' : 'Failed to create campaign');
+      console.error(editMode ? 'Failed to update campaign:' : 'Failed to create campaign:', error);
       setError(errorMessage);
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleEdit = (campaign: Campaign) => {
+    setEditMode(true);
+    setEditId(campaign._id);
+    setFormData({
+      name: campaign.name,
+      emailListId: (campaign as any).emailListId?._id || (campaign as any).emailListId || '',
+      templateId: (campaign as any).templateId?._id || (campaign as any).templateId || '',
+      scheduledFor: campaign.scheduledFor ? campaign.scheduledFor.slice(0, 16) : '',
+      perDayLimit: (campaign as any).perDayLimit || 1,
+    });
+    setShowForm(true);
+    setError('');
+    setSuccess('');
   };
 
   const handleSend = async (id: string) => {
@@ -256,8 +329,7 @@ export default function CampaignsPage() {
 
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md mb-8">
-          <h3 className="text-xl font-bold mb-4">Create New Campaign</h3>
-          
+          <h3 className="text-xl font-bold mb-4">{editMode ? 'Edit Campaign' : 'Create New Campaign'}</h3>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Campaign Name *
@@ -271,7 +343,6 @@ export default function CampaignsPage() {
               required
             />
           </div>
-
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Email List *
@@ -288,7 +359,6 @@ export default function CampaignsPage() {
               ))}
             </select>
           </div>
-
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Email Template *
@@ -305,7 +375,6 @@ export default function CampaignsPage() {
               ))}
             </select>
           </div>
-
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Per Day Limit
@@ -318,7 +387,6 @@ export default function CampaignsPage() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Schedule For (Optional)
@@ -330,20 +398,21 @@ export default function CampaignsPage() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-
           <div className="flex gap-3">
             <button 
               type="submit" 
               disabled={submitting}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400"
             >
-              {submitting ? 'Creating...' : 'Create Campaign'}
+              {submitting ? (editMode ? 'Saving...' : 'Creating...') : (editMode ? 'Save Changes' : 'Create Campaign')}
             </button>
             <button 
               type="button" 
               onClick={() => {
                 setShowForm(false);
                 setFormData({ name: '', emailListId: '', templateId: '', scheduledFor: '', perDayLimit: 1 });
+                setEditMode(false);
+                setEditId(null);
                 setError('');
               }}
               className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition"
@@ -379,7 +448,29 @@ export default function CampaignsPage() {
                           'text-gray-600'
                         }`}>{campaign.status.toUpperCase()}</span>
                       </p>
-                      <div className="grid grid-cols-4 gap-4 mt-3 text-sm">
+                      <div className="mt-2 text-sm flex flex-wrap gap-x-6 gap-y-1 items-center">
+                        <span>
+                          <span className="font-semibold text-gray-500">Email List:</span>
+                          <span className="ml-1 font-semibold text-blue-700">{campaign.emailListId?.name || '-'}</span>
+                        </span>
+                        <span>
+                          <span className="font-semibold text-gray-500">Email Template:</span>
+                          <span className="ml-1 font-semibold text-purple-700">{campaign.templateId?.name || '-'}</span>
+                        </span>
+                        <span>
+                          <span className="font-semibold text-gray-500">Per Day Limit:</span>
+                          <span className="ml-1 font-semibold text-green-700">{campaign.perDayLimit ?? '-'}</span>
+                        </span>
+                        <span>
+                          <span className="font-semibold text-gray-500">Schedule Date/Time:</span>
+                          <span className="ml-1 font-semibold text-pink-700">{campaign.scheduledFor ? new Date(campaign.scheduledFor).toLocaleString() : '-'}</span>
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-5 gap-4 mt-3 text-sm">
+                        <div className="bg-gray-50 p-3 rounded">
+                          <p className="text-gray-600">Total Emails</p>
+                          <p className="font-bold text-xl text-gray-800">{campaign.totalEmails ?? 0}</p>
+                        </div>
                         <div className="bg-blue-50 p-3 rounded">
                           <p className="text-gray-600">Sent</p>
                           <p className="font-bold text-xl text-blue-600">{campaign.sentCount}</p>
@@ -400,31 +491,67 @@ export default function CampaignsPage() {
                         )}
                       </div>
                     </div>
-                    <div className="ml-4 flex gap-2">
-                      {campaign.status === 'draft' && (
+                    <div className="ml-4 flex flex-col gap-2 items-end">
+                      <div className="flex gap-2">
                         <button
-                          onClick={() => handleSend(campaign._id)}
-                          disabled={sendingId === campaign._id}
-                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
+                          onClick={() => handleEdit(campaign)}
+                          className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"
                         >
-                          {sendingId === campaign._id ? 'Sending...' : 'Send Now'}
+                          Edit
                         </button>
-                      )}
-                      {campaign.status === 'completed' && (
                         <button
-                          onClick={() => handleReRun(campaign._id)}
-                          disabled={reRunningId === campaign._id}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400"
+                          onClick={() => handleTestEmailClick(campaign._id)}
+                          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
                         >
-                          {reRunningId === campaign._id ? 'Re-Running...' : '🔄 Re-Run'}
+                          Test Email
                         </button>
+                        {campaign.status === 'draft' && (
+                          <button
+                            onClick={() => handleSend(campaign._id)}
+                            disabled={sendingId === campaign._id}
+                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
+                          >
+                            {sendingId === campaign._id ? 'Sending...' : 'Send Now'}
+                          </button>
+                        )}
+                        {campaign.status === 'completed' && (
+                          <button
+                            onClick={() => handleReRun(campaign._id)}
+                            disabled={reRunningId === campaign._id}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400"
+                          >
+                            {reRunningId === campaign._id ? 'Re-Running...' : '🔄 Re-Run'}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleDelete(campaign._id)}
+                          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                      {testEmailState[campaign._id]?.open && (
+                        <div className="flex items-center gap-2 mt-2">
+                          <input
+                            type="email"
+                            placeholder="Enter test email"
+                            value={testEmailState[campaign._id]?.email || ''}
+                            onChange={e => handleTestEmailChange(campaign._id, e.target.value)}
+                            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            disabled={testEmailState[campaign._id]?.loading}
+                          />
+                          <button
+                            onClick={() => handleSendTestEmail(campaign._id)}
+                            disabled={testEmailState[campaign._id]?.loading}
+                            className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:bg-gray-400"
+                          >
+                            {testEmailState[campaign._id]?.loading ? 'Sending...' : 'Send Test'}
+                          </button>
+                          {testEmailState[campaign._id]?.result && (
+                            <span className="ml-2 text-sm text-gray-700">{testEmailState[campaign._id]?.result}</span>
+                          )}
+                        </div>
                       )}
-                      <button
-                        onClick={() => handleDelete(campaign._id)}
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-                      >
-                        Delete
-                      </button>
                     </div>
                   </div>
                 </div>

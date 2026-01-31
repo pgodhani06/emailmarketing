@@ -1,17 +1,18 @@
+
 import nodemailer from 'nodemailer';
+import dbConnect from '@/lib/mongodb';
+import SmtpSetting from '@/models/SmtpSetting';
 
 export async function getGmailTransport() {
-  const senderEmail = process.env.GMAIL_SENDER_EMAIL;
-  const senderPassword = process.env.GMAIL_PASSWORD;
-
+  await dbConnect();
+  const setting = await SmtpSetting.findOne({ provider: 'gmail' });
+  const senderEmail = setting?.senderEmail;
+  const senderPassword = setting?.password;
   if (!senderEmail || !senderPassword) {
     throw new Error(
-      'Gmail SMTP credentials not configured. Please set:\n' +
-      '- GMAIL_SENDER_EMAIL\n' +
-      '- GMAIL_PASSWORD (use Gmail App Password)'
+      'Gmail SMTP credentials not configured in DB. Please set them in Settings.'
     );
   }
-
   try {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -20,8 +21,6 @@ export async function getGmailTransport() {
         pass: senderPassword,
       },
     });
-
-    // Verify connection
     await transporter.verify();
     return transporter;
   } catch (error) {
@@ -30,11 +29,24 @@ export async function getGmailTransport() {
   }
 }
 
+
 export function replaceVariables(content: string, variables: Record<string, string>): string {
   let result = content;
   Object.keys(variables).forEach((key) => {
-    const regex = new RegExp(`{{${key}}}`, 'g');
+    const regex = new RegExp(`{{\\s*${key}\\s*}}`, 'g');
     result = result.replace(regex, variables[key]);
   });
   return result;
+}
+
+export async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
+  const transporter = await getGmailTransport();
+  // Get sender email from DB
+  const setting = await SmtpSetting.findOne({ provider: 'gmail' });
+  await transporter.sendMail({
+    from: setting?.senderEmail,
+    to,
+    subject,
+    html,
+  });
 }
