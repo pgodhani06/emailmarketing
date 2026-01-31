@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import dbConnect from '@/lib/mongodb';
 import EmailList from '@/models/EmailList';
 import EmailTemplate from '@/models/EmailTemplate';
+import Campaign from '@/models/Campaign';
 import Report from '@/models/Report';
 import { getGmailTransport, replaceVariables } from '@/lib/emailService';
 
@@ -13,7 +14,7 @@ import { getGmailTransport, replaceVariables } from '@/lib/emailService';
         if (!emailId || !templateId) {
           return NextResponse.json({ error: 'emailId and templateId are required' }, { status: 400 });
         }
-        console.log('Received emailId:', emailId, 'templateId:', templateId);
+        
         // Find the email by _id in any EmailList
         // Use aggregation to get only the matching email object and campaigns, using ObjectId
         const objectEmailId = new mongoose.Types.ObjectId(emailId);
@@ -37,11 +38,6 @@ import { getGmailTransport, replaceVariables } from '@/lib/emailService';
         const emailList = result[0].emails[0];
         console.log('Found emailList:', emailList);
         const recipient = emailList;
-        // Try to get campaignId from the emailList's campaigns array (first one)
-        // const campaignId = Array.isArray(emailList.campaigns) && emailList.campaigns.length > 0 ? emailList.campaigns[0] : undefined;
-        // if (!campaignId) {
-        //   return NextResponse.json({ error: 'No campaignId found for this email. Cannot create report.' }, { status: 400 });
-        // }
 
         // Find the template
         const template = await EmailTemplate.findById(templateId);
@@ -76,7 +72,10 @@ import { getGmailTransport, replaceVariables } from '@/lib/emailService';
         };
 
         const personalizedContent = replaceVariables(template.htmlContent, variables);
-        const trackingPixel = `<img src="${trackingDomain}/api/track/none?email=${encodeURIComponent(recipient.email.toLowerCase())}" width="1" height="1" alt="" style="display:none;" />`;
+
+        const campaign = await Campaign.findById(campaignId);
+        
+        const trackingPixel = `<img src="${trackingDomain}/api/track/${campaign.trackingPixelId}?email=${encodeURIComponent(recipient.email.toLowerCase())}" width="1" height="1" alt="" style="display:none;" />`;
         const mailOptions = {
           from: process.env.GMAIL_SENDER_EMAIL,
           to: recipient.email,
