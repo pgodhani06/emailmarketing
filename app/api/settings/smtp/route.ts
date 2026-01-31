@@ -22,10 +22,10 @@ export async function POST(request: NextRequest) {
   if (!senderEmail || !password) {
     return NextResponse.json({ error: 'senderEmail and password required' }, { status: 400 });
   }
-//   let setting = await SmtpSetting.findOneAndUpdate(
-//     { provider: 'gmail' },
-//     { senderEmail, password, updatedAt: new Date() },
-//     { upsert: true, new: true }
-//   );
+  await SmtpSetting.findOneAndUpdate(
+    { provider: 'gmail' },
+    { senderEmail, password, updatedAt: new Date() },
+    { upsert: true, new: true }
+  );
   return NextResponse.json({ success: true });
 }
