@@ -5,7 +5,7 @@ const reportSchema = new mongoose.Schema(
     campaignId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Campaign',
-      required: true,
+      // required: true,
     },
     recipientEmail: String,
     status: {

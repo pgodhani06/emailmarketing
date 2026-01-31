@@ -1,13 +1,15 @@
 // app/runCampaignBatch.js
 // Shared campaign batch logic for both API and cron.js
 
-const dbConnect = require('../lib/mongodb').default;
-const Campaign = require('../models/Campaign').default;
-const EmailList = require('../models/EmailList').default;
-const EmailTemplate = require('../models/EmailTemplate').default;
-const Report = require('../models/Report').default;
-const CroneLog = require('../models/CroneLog').default;
-const { getGmailTransport, replaceVariables } = require('../lib/emailService');
+
+const path = require('path');
+const dbConnect = require(path.join(__dirname, '../lib/mongodb')).default;
+const Campaign = require(path.join(__dirname, '../models/Campaign')).default;
+const EmailList = require(path.join(__dirname, '../models/EmailList')).default;
+const EmailTemplate = require(path.join(__dirname, '../models/EmailTemplate')).default;
+const Report = require(path.join(__dirname, '../models/Report')).default;
+const CroneLog = require(path.join(__dirname, '../models/CroneLog')).default;
+const { getGmailTransport, replaceVariables } = require(path.join(__dirname, '../lib/emailService'));
 
 async function runCampaignBatch() {
   const now = new Date();
