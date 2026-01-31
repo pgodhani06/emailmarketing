@@ -17,8 +17,8 @@ await mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => {
     console.log("mongoes connect successfully");
-    app.listen(5001, async () => {
-      console.log("running port:", 5001);
+    app.listen(process.env.SERVER_PORT || 5005, async () => {
+      console.log("running port:", process.env.SERVER_PORT || 5005);
     });
   })
   .catch((err) => {
