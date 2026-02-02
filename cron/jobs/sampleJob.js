@@ -6,16 +6,23 @@ import campaignModel from '../model/campaign.model.js';
 import '../model/emailList.model.js';
 import '../model/emailTemplate.model.js';
 
+// Returns the current date/time expressed in IST (Asia/Kolkata) as a Date object
+const getISTDate = () => {
+  const now = new Date();
+  const istString = now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+  return new Date(istString);
+};
+
 const sampleJob = async () => {
   try {
     // Aggregation: get campaigns and perDayLimit emails to send
     const campaigns = await campaignModel.aggregate([
       {
-        $match: {
+          $match: {
           status: { $ne: "completed" },
           $or: [
             { cronAt: null },
-            { cronAt: { $lte: new Date(Date.now()) } }
+            { cronAt: { $lte: new Date(Date.now())} }
           ],
         }
       },
@@ -60,6 +67,9 @@ const sampleJob = async () => {
         }
       }
     ]);
+    
+    console.log('sampleJob started at:', getISTDate());
+    console.log('Fetching campaigns scheduled for today...',new Date(Date.now()));
     console.log('Campaigns fetched successfully.campaigns::',campaigns);
     if (Array.isArray(campaigns) && campaigns.length > 0) {
       for (const campaign of campaigns) {
