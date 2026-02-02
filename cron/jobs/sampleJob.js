@@ -22,7 +22,7 @@ const sampleJob = async () => {
           status: { $ne: "completed" },
           $or: [
             { cronAt: null },
-            { cronAt: { $lte: new Date(Date.now())} }
+            { cronAt: { $lte:  getISTDate()} }
           ],
         }
       },
@@ -68,9 +68,9 @@ const sampleJob = async () => {
       }
     ]);
     
-    console.log('sampleJob started at:', getISTDate());
-    console.log('Fetching campaigns scheduled for today...',new Date(Date.now()));
-    console.log('Campaigns fetched successfully.campaigns::',campaigns);
+    // console.log('sampleJob started at:', getISTDate());
+    // console.log('Fetching campaigns scheduled for today...',new Date(Date.now()));
+    // console.log('Campaigns fetched successfully.campaigns::',campaigns);
     if (Array.isArray(campaigns) && campaigns.length > 0) {
       for (const campaign of campaigns) {
         console.log('Campaign and emails to send:', campaign);
